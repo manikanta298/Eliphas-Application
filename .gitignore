@@ -8,11 +8,13 @@ dist/
 build/
 .vite/
 
-# Environment files
+# Local env only (never commit these)
 .env
 .env.local
-.env.production
 .env*.local
+
+# Keep .env.production (has public API URL, no secrets)
+!.env.production
 
 # Logs
 *.log
