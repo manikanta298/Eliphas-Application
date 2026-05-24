@@ -3,10 +3,13 @@ const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 
 const generateTokens = (id) => {
-  const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
+  const secret        = process.env.JWT_SECRET        || 'logicore_fallback_secret';
+  const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'logicore_refresh_fallback';
+
+  const accessToken = jwt.sign({ id }, secret, {
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   });
-  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+  const refreshToken = jwt.sign({ id }, refreshSecret, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   });
   return { accessToken, refreshToken };
@@ -54,7 +57,7 @@ exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(401).json({ success: false, message: 'No refresh token' });
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'logicore_refresh_fallback');
     const user = await User.findById(decoded.id).select('-password');
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({ success: false, message: 'Invalid refresh token' });

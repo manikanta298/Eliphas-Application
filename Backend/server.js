@@ -8,13 +8,62 @@ const connectDB = require('./config/db');
 // Always load .env from the backend folder root
 dotenv.config({ path: path.join(__dirname, '.env') });
 connectDB().then(async () => {
-  // Auto-generate financial years on startup
+  // ── Auto-generate Financial Years ──────────────────────────
   try {
     const FinancialYear = require('./models/FinancialYear');
     await FinancialYear.autoGenerate();
     console.log('✅ Financial years auto-generated');
   } catch (e) {
     console.warn('⚠️  FY auto-generate:', e.message);
+  }
+
+  // ── Auto-create Master Admin if DB is empty ─────────────────
+  try {
+    const User = require('./models/User');
+    const count = await User.countDocuments();
+    if (count === 0) {
+      console.log('📦 No users found — seeding default admin...');
+      const Site = require('./models/Site');
+      const Product = require('./models/Product');
+      const Vehicle = require('./models/Vehicle');
+
+      const masterAdmin = await User.create({
+        name: 'Master Admin',
+        email: 'masteradmin@erp.com',
+        password: 'Admin@123',
+        role: 'masterAdmin',
+        phone: '9999999999',
+      });
+      await User.create({ name: 'Admin User', email: 'admin@erp.com', password: 'Admin@123', role: 'admin', phone: '8888888888' });
+      const manager = await User.create({ name: 'Site Manager', email: 'manager@erp.com', password: 'Manager@123', role: 'manager', phone: '7777777777' });
+
+      const site1 = await Site.create({ name: 'Vizag Steel Plant', clientCompany: 'Rashtriya Ispat Nigam Ltd.', location: 'Visakhapatnam, AP', manager: manager._id, status: 'active', startDate: new Date('2024-01-01'), contractValue: 5000000 });
+      const site2 = await Site.create({ name: 'Gannavaram Port', clientCompany: 'Gannavaram Port Authority', location: 'Gannavaram, AP', manager: manager._id, status: 'active', startDate: new Date('2024-03-01'), contractValue: 3000000 });
+
+      manager.assignedSites = [site1._id, site2._id];
+      await manager.save();
+
+      await Product.insertMany([
+        { name: 'River Sand',  category: 'Sand',  unit: 'Ton', purchaseRate: 800,   sellingRate: 1200,  gstPercent: 5,  tdsPercent: 1, transportRate: 150 },
+        { name: 'Thermal Coal',category: 'Coal',  unit: 'Ton', purchaseRate: 3500,  sellingRate: 4200,  gstPercent: 5,  tdsPercent: 1, transportRate: 300 },
+        { name: 'Fly Ash',     category: 'FlyAsh',unit: 'Ton', purchaseRate: 200,   sellingRate: 450,   gstPercent: 5,  tdsPercent: 1, transportRate: 80  },
+        { name: 'Blue Metal',  category: 'Granite',unit:'Ton', purchaseRate: 900,   sellingRate: 1400,  gstPercent: 18, tdsPercent: 1, transportRate: 200 },
+        { name: 'TMT Steel',   category: 'Steel', unit: 'Ton', purchaseRate: 52000, sellingRate: 55000, gstPercent: 18, tdsPercent: 1, transportRate: 500 },
+      ]);
+
+      await Vehicle.insertMany([
+        { vehicleNumber: 'AP05TC1234', vehicleType: 'Tipper', ownership: 'own', driverName: 'Raju Kumar', driverPhone: '9876543210', capacity: 15, tripRate: 2500, tonRate: 180, assignedSites: [site1._id], status: 'active' },
+        { vehicleNumber: 'AP05TC5678', vehicleType: 'Truck',  ownership: 'own', driverName: 'Suresh Rao', driverPhone: '9876543211', capacity: 20, tripRate: 3000, tonRate: 160, assignedSites: [site1._id, site2._id], status: 'active' },
+        { vehicleNumber: 'AP05JC0001', vehicleType: 'JCB',    ownership: 'own', driverName: 'Manoj',      driverPhone: '9876543213', hourlyRate: 1200, dailyRate: 9000, assignedSites: [site1._id], status: 'active' },
+      ]);
+
+      console.log('✅ Default users + seed data created');
+      console.log('   masteradmin@erp.com / Admin@123');
+      console.log('   admin@erp.com       / Admin@123');
+      console.log('   manager@erp.com     / Manager@123');
+    }
+  } catch (e) {
+    console.warn('⚠️  Auto-seed error:', e.message);
   }
 });
 
@@ -73,9 +122,21 @@ app.use('/api/purchases',       require('./routes/purchaseRoutes'));
 app.use('/api/transactions',    require('./routes/transactionRoutes'));
 
 // Health check — Render pings this to keep the service alive
-app.get('/api/health', (req, res) =>
-  res.json({ status: 'OK', env: process.env.NODE_ENV, timestamp: new Date() })
-);
+app.get('/api/health', async (req, res) => {
+  const mongoose = require('mongoose');
+  const User = require('./models/User');
+  let userCount = 0;
+  try { userCount = await User.countDocuments(); } catch {}
+  res.json({
+    status: 'OK',
+    env: process.env.NODE_ENV,
+    db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    jwtConfigured: !!process.env.JWT_SECRET,
+    mongoConfigured: !!process.env.MONGODB_URI,
+    users: userCount,
+    timestamp: new Date(),
+  });
+});
 
 // 404 for unknown API routes
 app.use('/api/*', (req, res) =>
