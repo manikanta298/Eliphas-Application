@@ -27,6 +27,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://eliphas-application.onrender.com',
   'https://eliphas-application.vercel.app',
+  'https://eliphas-application-git-main-manikanta298.vercel.app',
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ];
 
