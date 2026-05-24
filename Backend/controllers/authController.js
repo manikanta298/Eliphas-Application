@@ -7,10 +7,10 @@ const generateTokens = (id) => {
   const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'logicore_refresh_fallback';
 
   const accessToken = jwt.sign({ id }, secret, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    expiresIn: process.env.JWT_EXPIRES_IN || '24h',  // 24h (not 15m) — prevents rapid expiry
   });
   const refreshToken = jwt.sign({ id }, refreshSecret, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   });
   return { accessToken, refreshToken };
 };

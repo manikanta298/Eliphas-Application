@@ -17,8 +17,10 @@ export default function Login() {
     setError('');
     try {
       await login(form.email, form.password);
+      // Tell FinancialYearContext to load FYs now
+      window.dispatchEvent(new CustomEvent('auth:login'));
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(err.response?.data?.message || 'Login failed. Check credentials and try again.');
     } finally {
       setLoading(false);
     }
