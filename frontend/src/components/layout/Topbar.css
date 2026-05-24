@@ -1,0 +1,208 @@
+.topbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  height: var(--topbar-h);
+  background: var(--clr-bg2);
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-6);
+  z-index: 150;
+  transition: left var(--t-med);
+  gap: var(--sp-4);
+}
+
+.main-content.sidebar-collapsed .topbar {
+  left: var(--sidebar-w-collapsed);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-menu-btn {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  width: 36px; height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.topbar-menu-btn span {
+  display: block;
+  width: 16px; height: 2px;
+  background: var(--clr-text2);
+  border-radius: 2px;
+}
+.topbar-menu-btn:hover span { background: var(--clr-text); }
+
+.topbar-page-info {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.topbar-page-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-date {
+  font-size: 0.72rem;
+  color: var(--clr-text3);
+  white-space: nowrap;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-shrink: 0;
+}
+
+.topbar-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px 12px;
+  background: var(--clr-success-dim);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: var(--r-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--clr-success);
+  white-space: nowrap;
+}
+
+.topbar-pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.topbar-pill-dot.active {
+  background: var(--clr-success);
+  animation: pulse 2s infinite;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px 12px 6px 6px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  position: relative;
+  transition: border-color var(--t-fast);
+}
+.topbar-user:hover { border-color: var(--clr-accent); }
+
+.topbar-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--clr-accent);
+  color: var(--clr-text-inv);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.topbar-user-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.topbar-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--clr-text);
+  white-space: nowrap;
+}
+
+.topbar-role {
+  font-size: 0.65rem;
+  color: var(--clr-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.topbar-chevron {
+  font-size: 0.55rem;
+  color: var(--clr-text3);
+}
+
+.topbar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--clr-bg2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp 0.2s ease;
+  z-index: 300;
+}
+
+.topbar-dropdown-header {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.topbar-dropdown-header strong { font-size: 0.875rem; color: var(--clr-text); }
+.topbar-dropdown-header span   { font-size: 0.75rem; color: var(--clr-text3); }
+
+.topbar-dropdown-item {
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 0.875rem;
+  color: var(--clr-text2);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.topbar-dropdown-item:hover { background: var(--clr-surface2); color: var(--clr-text); }
+
+@media (max-width: 1023px) {
+  .topbar { left: 0; }
+  .topbar-menu-btn { display: flex; }
+  .topbar-pill { display: none; }
+}
+
+@media (max-width: 767px) {
+  .topbar-user-text { display: none; }
+  .topbar-chevron { display: none; }
+  .topbar-date { display: none; }
+}

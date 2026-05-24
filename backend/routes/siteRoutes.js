@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const { getSites, createSite, updateSite, deleteSite } = require('../controllers/crudController');
+const { protect, authorize } = require('../middleware/auth');
+router.use(protect);
+router.get('/', getSites);
+router.post('/', authorize('masterAdmin','admin','manager'), createSite);
+router.put('/:id', authorize('masterAdmin','admin','manager'), updateSite);
+router.delete('/:id', authorize('masterAdmin','admin'), deleteSite);
+module.exports = router;
