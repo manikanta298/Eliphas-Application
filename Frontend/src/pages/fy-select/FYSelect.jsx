@@ -6,13 +6,9 @@ export default function FYSelectPage() {
   const { financialYears, selectedFY, changeFY, loading } = useFY();
   const navigate = useNavigate();
 
-  // If FY was already confirmed before, skip this screen
   useEffect(() => {
     const confirmed = localStorage.getItem('fyConfirmed');
-    // Only skip if years are already loaded (avoid premature redirect)
-    if (confirmed && financialYears.length > 0) {
-      navigate('/', { replace: true });
-    }
+    if (confirmed && financialYears.length > 0) navigate('/', { replace: true });
   }, [financialYears]);
 
   const handleContinue = () => {
@@ -24,100 +20,114 @@ export default function FYSelectPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+      background: 'linear-gradient(135deg, #e8eeff 0%, #f0f4ff 50%, #e4edff 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Segoe UI', system-ui, sans-serif",
+      fontFamily: "'Inter', system-ui, sans-serif", padding: 20,
     }}>
       <div style={{
-        background: '#1e2235', border: '1px solid #2d3748',
-        borderRadius: 20, padding: '44px 40px',
-        width: '100%', maxWidth: 440,
-        boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
+        background: '#fff', border: '1px solid #dde3f0',
+        borderRadius: 20, padding: '40px 36px',
+        width: '100%', maxWidth: 420,
+        boxShadow: '0 8px 40px rgba(26,60,143,0.12)',
       }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
-            width: 56, height: 56,
-            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-            borderRadius: 14, margin: '0 auto 14px',
+            width: 64, height: 64, borderRadius: 16,
+            background: 'linear-gradient(135deg, #1a3c8f, #2563eb)',
+            margin: '0 auto 14px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.6rem', boxShadow: '0 8px 24px #3b82f644',
-          }}>⬡</div>
-          <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f1f5f9' }}>LogiCore ERP</div>
-          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 4 }}>Select Financial Year to continue</div>
+            fontSize: '1.8rem', boxShadow: '0 8px 24px rgba(26,60,143,0.25)',
+          }}>🐕</div>
+          <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: '1.25rem', fontWeight: 800, color: '#1a3c8f' }}>
+            Select Financial Year
+          </div>
+          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 4 }}>
+            Choose the financial year to continue
+          </div>
         </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 32, color: '#64748b' }}>
             <div style={{ fontSize: '2rem', marginBottom: 12 }}>⏳</div>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Loading years...</div>
-            <div style={{ fontSize: '0.78rem' }}>Waking up server (30s on free tier)</div>
+            <div style={{ fontWeight: 600, marginBottom: 6, color: '#1a3c8f' }}>Loading years...</div>
+            <div style={{ fontSize: '0.78rem' }}>Server waking up (~30s)</div>
           </div>
         ) : financialYears.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 24, color: '#ef4444' }}>
+          <div style={{ textAlign: 'center', padding: 24, color: '#dc2626' }}>
             <div style={{ fontSize: '2rem', marginBottom: 8 }}>⚠️</div>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Could not load financial years</div>
-            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: 16 }}>Backend may be waking up. Please wait...</div>
-            <button onClick={() => window.location.reload()}
-              style={{ padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' }}>
-              🔄 Retry
-            </button>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Backend unreachable</div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: 16 }}>Please wait and retry</div>
+            <button onClick={() => window.location.reload()} style={{
+              padding: '8px 20px', borderRadius: 8,
+              background: '#1a3c8f', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600,
+            }}>🔄 Retry</button>
           </div>
         ) : (
           <>
+            {/* FY Radio List — matching image */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
               {financialYears.map(fy => {
                 const isSelected = selectedFY?.label === fy.label;
                 return (
-                  <button key={fy._id} onClick={() => changeFY(fy.label)} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  <label key={fy._id} onClick={() => changeFY(fy.label)} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
                     padding: '14px 18px', borderRadius: 12, cursor: 'pointer',
-                    border: `2px solid ${isSelected ? '#3b82f6' : '#2d3748'}`,
-                    background: isSelected ? 'linear-gradient(135deg, #1e3a5f, #1a2a4a)' : '#161b2e',
-                    color: '#f1f5f9', textAlign: 'left', width: '100%',
-                    boxShadow: isSelected ? '0 0 20px #3b82f633' : 'none',
-                    transition: 'all 0.2s',
+                    border: `1.5px solid ${isSelected ? '#1a3c8f' : '#dde3f0'}`,
+                    background: isSelected ? '#eef2ff' : '#f8faff',
+                    transition: 'all 0.15s',
                   }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span>📅</span>
-                        <span style={{ fontWeight: 700, fontSize: '1rem', color: isSelected ? '#60a5fa' : '#e2e8f0' }}>
-                          {fy.label}
-                        </span>
+                    {/* Radio circle */}
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                      border: `2px solid ${isSelected ? '#1a3c8f' : '#c7d0e8'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: isSelected ? '#1a3c8f' : '#fff',
+                      transition: 'all 0.15s',
+                    }}>
+                      {isSelected && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: isSelected ? '#1a3c8f' : '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {fy.label}
                         {fy.isCurrent && (
-                          <span style={{ fontSize: '0.68rem', padding: '1px 8px', borderRadius: 20, background: '#22c55e22', color: '#22c55e', border: '1px solid #22c55e44', fontWeight: 600 }}>
+                          <span style={{ fontSize: '0.65rem', padding: '1px 7px', borderRadius: 20, background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0', fontWeight: 700 }}>
                             Current
                           </span>
                         )}
+                        {fy.isLocked && (
+                          <span style={{ fontSize: '0.65rem', padding: '1px 7px', borderRadius: 20, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontWeight: 700 }}>
+                            🔒 Locked
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 3, marginLeft: 26 }}>
-                        {new Date(fy.startDate).toLocaleDateString('en-IN')} → {new Date(fy.endDate).toLocaleDateString('en-IN')}
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>
+                        {new Date(fy.startDate).toLocaleDateString('en-IN')} — {new Date(fy.endDate).toLocaleDateString('en-IN')}
                       </div>
                     </div>
-                    {isSelected && (
-                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.75rem', flexShrink: 0 }}>✓</div>
-                    )}
-                  </button>
+                  </label>
                 );
               })}
             </div>
 
+            {/* Continue Button */}
             <button onClick={handleContinue} disabled={!selectedFY} style={{
-              width: '100%', padding: 14,
-              background: selectedFY ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : '#2d3748',
-              color: selectedFY ? '#fff' : '#64748b',
+              width: '100%', padding: '13px',
+              background: selectedFY ? 'linear-gradient(135deg, #1a3c8f, #2563eb)' : '#e2e8f0',
+              color: selectedFY ? '#fff' : '#94a3b8',
               border: 'none', borderRadius: 12, cursor: selectedFY ? 'pointer' : 'not-allowed',
               fontWeight: 700, fontSize: '0.95rem',
-              boxShadow: selectedFY ? '0 8px 24px #3b82f644' : 'none',
+              boxShadow: selectedFY ? '0 4px 16px rgba(26,60,143,0.3)' : 'none',
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              transition: 'all 0.15s',
             }}>
-              Continue with FY {selectedFY?.label} →
+              Continue →
             </button>
           </>
         )}
-
-        <div style={{ textAlign: 'center', marginTop: 14, fontSize: '0.75rem', color: '#475569' }}>
-          You can change this anytime from the top navigation bar
-        </div>
+        <p style={{ textAlign: 'center', marginTop: 14, fontSize: '0.73rem', color: '#94a3b8' }}>
+          You can change this anytime from the top bar
+        </p>
       </div>
     </div>
   );

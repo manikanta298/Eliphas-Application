@@ -5,19 +5,19 @@ import { useFY } from '../../contexts/FinancialYearContext';
 import './Topbar.css';
 
 const PAGE_TITLES = {
-  '/':             { title: 'Dashboard',           icon: '⬡' },
-  '/sites':        { title: 'Site Management',     icon: '🗺' },
+  '/':             { title: 'Home',                icon: '🏠' },
+  '/sites':        { title: 'Site Management',     icon: '🗺️' },
   '/vehicles':     { title: 'Vehicle Management',  icon: '🚛' },
   '/drivers':      { title: 'Driver Management',   icon: '👨‍✈️' },
   '/companies':    { title: 'Company Management',  icon: '🏢' },
   '/products':     { title: 'Product Master',      icon: '📦' },
   '/contracts':    { title: 'Contracts',           icon: '📋' },
-  '/trips':        { title: 'Transport Management',icon: '🔄' },
   '/purchase':     { title: 'Purchase Management', icon: '🛒' },
   '/sales':        { title: 'Sales Management',    icon: '💼' },
+  '/trips':        { title: 'Transport Management',icon: '🔄' },
   '/diesel':       { title: 'Diesel Management',   icon: '⛽' },
   '/invoices':     { title: 'Invoice Management',  icon: '🧾' },
-  '/transactions': { title: 'Transactions',        icon: '💳' },
+  '/transactions': { title: 'Payments & Receipts', icon: '💳' },
   '/reports':      { title: 'Reports & Analytics', icon: '📊' },
   '/profit':       { title: 'Profit Analytics',    icon: '💰' },
   '/settings':     { title: 'Settings',            icon: '⚙️' },
@@ -31,14 +31,17 @@ export default function Topbar({ onMenuClick }) {
   const location = useLocation();
   const [dropOpen, setDropOpen] = useState(false);
 
-  const page = PAGE_TITLES[location.pathname] || { title: 'LogiCore ERP', icon: '⬡' };
+  const page = PAGE_TITLES[location.pathname] || { title: 'Dashboard', icon: '🏠' };
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = now.toLocaleDateString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+  });
 
   return (
     <header className="topbar">
+      {/* Left */}
       <div className="topbar-left">
-        <button className="topbar-menu-btn" onClick={onMenuClick}>
+        <button className="topbar-menu-btn" onClick={onMenuClick} aria-label="Toggle menu">
           <span /><span /><span />
         </button>
         <div className="topbar-page-info">
@@ -50,25 +53,15 @@ export default function Topbar({ onMenuClick }) {
         </div>
       </div>
 
+      {/* Right */}
       <div className="topbar-right">
-        {/* Financial Year Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--clr-text3)', whiteSpace: 'nowrap' }}>📅 FY</span>
+        {/* FY Selector */}
+        <div className="topbar-fy-selector">
+          <span className="topbar-fy-label">FY</span>
           <select
+            className="topbar-fy-select"
             value={selectedFY?.label || ''}
             onChange={e => changeFY(e.target.value)}
-            style={{
-              padding: '5px 12px',
-              borderRadius: '20px',
-              border: '1px solid var(--clr-primary)',
-              background: 'var(--clr-primary)11',
-              color: 'var(--clr-primary)',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              outline: 'none',
-              minWidth: '110px',
-            }}
           >
             {financialYears.map(fy => (
               <option key={fy._id} value={fy.label}>
@@ -78,11 +71,14 @@ export default function Topbar({ onMenuClick }) {
           </select>
         </div>
 
-        {/* Quick stats pill */}
+        {/* Live pill */}
         <div className="topbar-pill">
-          <span className="topbar-pill-dot active" />
-          <span>System Live</span>
+          <span className="topbar-pill-dot" />
+          Live
         </div>
+
+        {/* Notification */}
+        <button className="topbar-icon-btn" aria-label="Notifications">🔔</button>
 
         {/* User dropdown */}
         <div className="topbar-user" onClick={() => setDropOpen(!dropOpen)}>
@@ -94,17 +90,22 @@ export default function Topbar({ onMenuClick }) {
           <span className="topbar-chevron">{dropOpen ? '▲' : '▼'}</span>
 
           {dropOpen && (
-            <div className="topbar-dropdown">
+            <div className="topbar-dropdown" onClick={e => e.stopPropagation()}>
               <div className="topbar-dropdown-header">
                 <strong>{user?.name}</strong>
                 <span>{user?.email}</span>
               </div>
               {selectedFY && (
-                <div className="topbar-dropdown-item" style={{ color: 'var(--clr-primary)', fontWeight: 600, pointerEvents: 'none' }}>
+                <div className="topbar-dropdown-item" style={{ color: 'var(--clr-primary)', fontWeight: 700, pointerEvents: 'none' }}>
                   📅 FY {selectedFY.label}
                 </div>
               )}
-              <div className="topbar-dropdown-item" onClick={logout}>⏻ Logout</div>
+              <div className="topbar-dropdown-item" onClick={() => window.location.href = '/settings'}>
+                ⚙️ Settings
+              </div>
+              <div className="topbar-dropdown-item" style={{ color: 'var(--clr-danger)' }} onClick={logout}>
+                🚪 Logout
+              </div>
             </div>
           )}
         </div>

@@ -120,6 +120,7 @@ app.use('/api/companies',       require('./routes/companyRoutes'));
 app.use('/api/drivers',         require('./routes/driverRoutes'));
 app.use('/api/purchases',       require('./routes/purchaseRoutes'));
 app.use('/api/transactions',    require('./routes/transactionRoutes'));
+app.use('/api/locations',       require('./routes/locationRoutes'));
 
 // Health check — Render pings this to keep the service alive
 app.get('/api/health', async (req, res) => {

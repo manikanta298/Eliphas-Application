@@ -1,27 +1,29 @@
 import { useState, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFY } from '../../contexts/FinancialYearContext';
 import './Dashboard.css';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const PIE_COLORS = ['#3b82f6','#f5a623','#22c55e','#a855f7','#ef4444','#06b6d4'];
+const PIE_COLORS = ['#1a3c8f','#2563eb','#f59e0b','#16a34a','#dc2626','#7c3aed'];
 
 const fmt = (n) => {
-  if (!n) return '₹0';
+  if (!n && n !== 0) return '₹0';
   if (n >= 10000000) return `₹${(n/10000000).toFixed(2)} Cr`;
-  if (n >= 100000) return `₹${(n/100000).toFixed(2)} L`;
+  if (n >= 100000)   return `₹${(n/100000).toFixed(2)} L`;
   return `₹${Number(n).toLocaleString('en-IN')}`;
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#1e2235', border: '1px solid #2d3748', borderRadius: 8, padding: '10px 14px', fontSize: '0.82rem' }}>
-      <p style={{ color: '#94a3b8', marginBottom: 4 }}>{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color, margin: '2px 0' }}>{p.name}: {fmt(p.value)}</p>
+    <div style={{ background:'#fff', border:'1px solid #dde3f0', borderRadius:8, padding:'10px 14px', boxShadow:'0 4px 16px rgba(0,0,0,0.10)', fontSize:'0.82rem' }}>
+      <p style={{ color:'#64748b', marginBottom:4, fontWeight:600 }}>{label}</p>
+      {payload.map((p,i) => (
+        <p key={i} style={{ color:p.color, margin:'2px 0', fontWeight:600 }}>
+          {p.name}: {fmt(p.value)}
+        </p>
       ))}
     </div>
   );
@@ -30,10 +32,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function Dashboard() {
   const { can } = useAuth();
   const { financialYears, selectedFY, changeFY } = useFY();
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [sites, setSites] = useState([]);
-  const [companies, setCompanies] = useState([]);
+  const [stats, setStats]           = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [sites, setSites]           = useState([]);
+  const [companies, setCompanies]   = useState([]);
   const [siteFilter, setSiteFilter] = useState('');
   const [companyFilter, setCompanyFilter] = useState('');
 
@@ -50,171 +52,162 @@ export default function Dashboard() {
   const fetchStats = () => {
     if (!selectedFY) return;
     setLoading(true);
-    const params = { financialYear: selectedFY.label };
-    if (siteFilter) params.site = siteFilter;
-    if (companyFilter) params.company = companyFilter;
-    api.get('/dashboard/stats', { params })
+    api.get('/dashboard/stats', { params: { financialYear: selectedFY.label, site: siteFilter, company: companyFilter } })
       .then(r => setStats(r.data.data))
-      .catch(console.error)
+      .catch(() => {})
       .finally(() => setLoading(false));
   };
 
   useEffect(() => { fetchStats(); }, [selectedFY, siteFilter, companyFilter]);
 
-  const monthlyData = stats?.charts?.monthly?.map(m => ({
-    name: MONTHS[(m._id.month - 1)],
-    Revenue: m.revenue || 0,
+  const monthlyData = (stats?.charts?.monthly || []).map(m => ({
+    name: MONTHS[(m._id.month - 1)] || '',
+    Sales: m.revenue || 0,
     Collected: m.collected || 0,
-  })) || [];
+  }));
 
-  const siteData = stats?.charts?.siteRevenue?.filter(s => s.revenue > 0)
-    .map(s => ({ name: s.siteName || 'Site', value: s.revenue })) || [];
+  const siteData = (stats?.charts?.siteRevenue || [])
+    .filter(s => s.revenue > 0)
+    .map(s => ({ name: s.siteName || 'Site', value: s.revenue }));
 
   if (loading && !stats) return (
-    <div style={{ display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'60vh',gap:16,color:'var(--clr-text3)' }}>
+    <div className="dashboard-loading">
       <div className="spinner spinner-lg" />
-      <p>Loading Dashboard — FY {selectedFY?.label}...</p>
+      <p style={{ color: 'var(--clr-primary)', fontWeight: 600 }}>
+        Loading Dashboard — FY {selectedFY?.label}...
+      </p>
+      <p style={{ fontSize: '0.78rem', color: 'var(--clr-text3)' }}>
+        First load may take ~30s (server waking up)
+      </p>
     </div>
   );
 
   return (
     <div className="dashboard animate-fade">
 
-      {/* ── Top Filter Bar (FY + Site + Company) ── */}
-      <div style={{
-        display:'flex', alignItems:'center', gap:12, flexWrap:'wrap',
-        background:'var(--clr-surface)', border:'1px solid var(--clr-border)',
-        borderRadius:12, padding:'10px 18px', marginBottom:20,
-      }}>
-        <span style={{ color:'var(--clr-text3)', fontSize:'0.78rem' }}>📅 Financial Year</span>
-        <select value={selectedFY?.label || ''} onChange={e => changeFY(e.target.value)}
-          style={{ padding:'5px 12px', borderRadius:20, border:'1px solid var(--clr-primary)', background:'var(--clr-primary)11', color:'var(--clr-primary)', fontWeight:700, fontSize:'0.82rem', cursor:'pointer' }}>
-          {financialYears.map(fy => (
-            <option key={fy._id} value={fy.label}>{fy.label}{fy.isCurrent ? ' ★' : ''}</option>
-          ))}
-        </select>
-
-        <span style={{ color:'var(--clr-border)' }}>|</span>
-        <span style={{ color:'var(--clr-text3)', fontSize:'0.78rem' }}>🗺 Site</span>
-        <select value={siteFilter} onChange={e => setSiteFilter(e.target.value)}
-          style={{ padding:'5px 12px', borderRadius:20, border:'1px solid var(--clr-border)', background:'var(--clr-bg)', color:'var(--clr-text)', fontSize:'0.82rem' }}>
-          <option value="">All Sites</option>
-          {sites.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-        </select>
-
-        <span style={{ color:'var(--clr-border)' }}>|</span>
-        <span style={{ color:'var(--clr-text3)', fontSize:'0.78rem' }}>🏢 Company</span>
-        <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
-          style={{ padding:'5px 12px', borderRadius:20, border:'1px solid var(--clr-border)', background:'var(--clr-bg)', color:'var(--clr-text)', fontSize:'0.82rem' }}>
-          <option value="">All Companies</option>
-          {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-        </select>
-
+      {/* ── Filter Bar ── */}
+      <div className="dash-filter-bar">
+        <div className="dash-filter-group">
+          <span className="dash-filter-label">FY</span>
+          <select className="dash-filter-select" value={selectedFY?.label || ''} onChange={e => changeFY(e.target.value)}>
+            {financialYears.map(fy => <option key={fy._id} value={fy.label}>{fy.label}{fy.isCurrent ? ' ★' : ''}</option>)}
+          </select>
+        </div>
+        <div className="dash-filter-sep" />
+        <div className="dash-filter-group">
+          <span className="dash-filter-label">Site</span>
+          <select className="dash-filter-select" value={siteFilter} onChange={e => setSiteFilter(e.target.value)}>
+            <option value="">All Sites</option>
+            {sites.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+          </select>
+        </div>
+        <div className="dash-filter-sep" />
+        <div className="dash-filter-group">
+          <span className="dash-filter-label">Company</span>
+          <select className="dash-filter-select" value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}>
+            <option value="">All Companies</option>
+            {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
+        </div>
         {(siteFilter || companyFilter) && (
-          <button onClick={() => { setSiteFilter(''); setCompanyFilter(''); }}
-            style={{ marginLeft:'auto', padding:'4px 12px', borderRadius:6, border:'1px solid var(--clr-border)', background:'transparent', color:'var(--clr-text3)', cursor:'pointer', fontSize:'0.75rem' }}>
-            Clear ✕
+          <button className="dash-filter-clear" onClick={() => { setSiteFilter(''); setCompanyFilter(''); }}>
+            ✕ Clear
           </button>
         )}
       </div>
 
-      {/* ── Master Stat Cards (row 1) ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:14 }}>
+      {/* ── Row 1: Master counts ── */}
+      <div className="dash-stat-row">
         {[
-          { icon:'🗺', label:'Total Sites',    value: stats?.masterStats?.totalSites    ?? '—', color:'#3b82f6' },
-          { icon:'🚛', label:'Total Vehicles', value: stats?.masterStats?.totalVehicles ?? '—', color:'#a855f7' },
-          { icon:'👨‍✈️', label:'Total Drivers',  value: stats?.masterStats?.totalDrivers  ?? '—', color:'#f59e0b' },
-          { icon:'🧾', label:'Total Invoices', value: stats?.masterStats?.totalInvoices ?? '—', color:'#06b6d4' },
-        ].map((c,i) => (
-          <div key={i} className="stat-card" style={{ '--card-color': c.color }}>
-            <div className="stat-card-icon" style={{ background: `${c.color}18`, fontSize:'1.4rem' }}>{c.icon}</div>
-            <div className="stat-card-label">{c.label}</div>
-            <div className="stat-card-value" style={{ color: c.color, fontSize:'2rem' }}>{c.value}</div>
+          { label: 'Total Sites',    value: stats?.masterStats?.totalSites    ?? 0, icon: '🗺️', color: '#1a3c8f', bg: '#eef2ff' },
+          { label: 'Total Vehicles', value: stats?.masterStats?.totalVehicles ?? 0, icon: '🚛', color: '#7c3aed', bg: '#f5f3ff' },
+          { label: 'Total Drivers',  value: stats?.masterStats?.totalDrivers  ?? 0, icon: '👨‍✈️', color: '#0891b2', bg: '#ecfeff' },
+          { label: 'Total Invoices', value: stats?.masterStats?.totalInvoices ?? 0, icon: '🧾', color: '#d97706', bg: '#fffbeb' },
+        ].map((c, i) => (
+          <div key={i} className="dash-count-card" style={{ '--cc': c.color, '--cb': c.bg }}>
+            <div className="dash-count-icon">{c.icon}</div>
+            <div className="dash-count-value">{c.value}</div>
+            <div className="dash-count-label">{c.label}</div>
           </div>
         ))}
       </div>
 
-      {/* ── Financial Stat Cards (row 2) ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:20 }}>
+      {/* ── Row 2: Financial stats (This Month) ── */}
+      <div className="dash-stat-row">
         {[
-          { icon:'🛒', label:'Purchase',      value: fmt(stats?.purchase?.total),  sub: `${stats?.purchase?.count || 0} entries`, color:'#f59e0b' },
-          { icon:'💰', label:'Sales',         value: fmt(stats?.sales?.current),   sub: `${stats?.sales?.invoiceCount || 0} invoices`, color:'#22c55e' },
-          ...(can('canViewProfit') ? [{ icon:'📈', label:'Profit', value: fmt(stats?.profit?.net), sub: 'Net after expenses', color:'#3b82f6' }] : [
-            { icon:'⏳', label:'Pending',     value: fmt(stats?.pending?.amount),  sub: `${stats?.pending?.count || 0} invoices due`, color:'#ef4444' },
-          ]),
-          { icon:'⛽', label:'Diesel Cost',   value: fmt(stats?.diesel?.amount),   sub: `${(stats?.diesel?.liters||0).toFixed(0)} Liters`, color:'#ef4444' },
-        ].map((c,i) => (
-          <div key={i} className="stat-card" style={{ '--card-color': c.color }}>
-            <div className="stat-card-icon" style={{ background: `${c.color}18`, fontSize:'1.4rem' }}>{c.icon}</div>
-            <div className="stat-card-label">{c.label}</div>
-            <div className="stat-card-value" style={{ color: c.color }}>{c.value}</div>
-            <div className="stat-card-sub">{c.sub}</div>
+          { label: 'Sales',     sub: 'This Month', value: fmt(stats?.sales?.current),   icon: '💰', color: '#1a3c8f', bg: '#eef2ff' },
+          { label: 'Purchase',  sub: 'This Month', value: fmt(stats?.purchase?.total),  icon: '🛒', color: '#16a34a', bg: '#f0fdf4' },
+          { label: 'Invoices',  sub: 'This Month', value: stats?.sales?.invoiceCount ?? 0, icon: '🧾', color: '#d97706', bg: '#fffbeb', noRupee: true },
+          ...(can('canViewProfit')
+            ? [{ label: 'Profit', sub: 'This Month', value: fmt(stats?.profit?.net), icon: '📈', color: '#dc2626', bg: '#fef2f2' }]
+            : [{ label: 'Pending', sub: 'Overdue', value: fmt(stats?.pending?.amount), icon: '⏳', color: '#dc2626', bg: '#fef2f2' }]
+          ),
+        ].map((c, i) => (
+          <div key={i} className="dash-fin-card" style={{ '--cc': c.color, '--cb': c.bg }}>
+            <div className="dash-fin-top">
+              <span className="dash-fin-label">{c.label}</span>
+              <span className="dash-fin-icon">{c.icon}</span>
+            </div>
+            <div className="dash-fin-value">{c.value}</div>
+            <div className="dash-fin-sub">{c.sub}</div>
           </div>
         ))}
       </div>
 
       {/* ── Charts Row ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:16, marginBottom:20 }}>
-        {/* Area Chart */}
-        <div className="card">
+      <div className="dash-charts-row">
+        {/* Line Chart */}
+        <div className="card dash-chart-main">
           <div className="card-header">
-            <span className="card-title">Sales Overview</span>
-            <span className="badge badge-accent">{selectedFY?.label}</span>
+            <span className="card-title">Sales Overview (This Month)</span>
+            <span className="badge badge-primary">{selectedFY?.label}</span>
           </div>
-          {monthlyData.length ? (
+          {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={monthlyData} margin={{ top:5, right:10, bottom:0, left:10 }}>
-                <defs>
-                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#f5a623" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#f5a623" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#22c55e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" tick={{ fill:'#6b7494', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill:'#6b7494', fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/100000).toFixed(0)}L`} />
+              <LineChart data={monthlyData} margin={{ top:5, right:10, bottom:0, left:0 }}>
+                <XAxis dataKey="name" tick={{ fill:'#64748b', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill:'#64748b', fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/100000).toFixed(0)}L`} width={52} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="Revenue"   stroke="#f5a623" fill="url(#revGrad)" strokeWidth={2} dot={false} />
-                <Area type="monotone" dataKey="Collected" stroke="#22c55e" fill="url(#colGrad)" strokeWidth={2} dot={false} />
-              </AreaChart>
+                <Line type="monotone" dataKey="Sales"     stroke="#1a3c8f" strokeWidth={2.5} dot={{ r:3, fill:'#1a3c8f' }} activeDot={{ r:5 }} name="Sales" />
+                <Line type="monotone" dataKey="Collected" stroke="#16a34a" strokeWidth={2.5} dot={{ r:3, fill:'#16a34a' }} activeDot={{ r:5 }} name="Collected" />
+              </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state"><div style={{ fontSize:'2rem' }}>📊</div><p>No data for {selectedFY?.label}</p></div>
+            <div className="empty-state" style={{ height:220 }}>
+              <div style={{ fontSize:'2.5rem' }}>📊</div>
+              <p>No data for {selectedFY?.label}</p>
+            </div>
           )}
         </div>
 
-        {/* Pie — Top Sites */}
-        <div className="card">
+        {/* Pie Chart — Top Sites */}
+        <div className="card dash-chart-side">
           <div className="card-header">
             <span className="card-title">Top Sites</span>
           </div>
-          {siteData.length ? (
+          {siteData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
-                  <Pie data={siteData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" paddingAngle={3}>
-                    {siteData.map((_,i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  <Pie data={siteData} cx="50%" cy="50%" outerRadius={70} dataKey="value" paddingAngle={3}>
+                    {siteData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip formatter={v => fmt(v)} />
+                  <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize:'0.75rem', color:'#64748b' }}>{v}</span>} />
                 </PieChart>
               </ResponsiveContainer>
-              <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:6 }}>
-                {siteData.map((s,i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:'0.78rem' }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                      <div style={{ width:8, height:8, borderRadius:'50%', background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                      <span style={{ color:'var(--clr-text2)' }}>{s.name}</span>
-                    </div>
-                    <span style={{ fontWeight:600 }}>{fmt(s.value)}</span>
+              <div className="site-legend">
+                {siteData.map((s, i) => (
+                  <div key={i} className="site-legend-item">
+                    <div className="site-legend-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                    <span className="site-legend-name">{s.name} Site</span>
+                    <span className="site-legend-val">{fmt(s.value)}</span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="empty-state"><div style={{ fontSize:'2rem' }}>🗺</div><p>No site data</p></div>
+            <div className="empty-state"><div style={{ fontSize:'2rem' }}>🗺️</div><p>No site data</p></div>
           )}
         </div>
       </div>
@@ -227,17 +220,17 @@ export default function Dashboard() {
         </div>
         <div className="quick-actions-grid">
           {[
-            { icon:'🛒', label:'Purchase Entry',  path:'/purchase?action=add', color:'#f59e0b' },
-            { icon:'💼', label:'Sales Entry',      path:'/sales?action=add',   color:'#22c55e' },
-            { icon:'🔄', label:'Add Trip',         path:'/trips?action=add',   color:'#3b82f6' },
-            { icon:'⛽', label:'Diesel Entry',     path:'/diesel?action=add',  color:'#ef4444' },
-            { icon:'🧾', label:'New Invoice',      path:'/invoices',           color:'#f5a623' },
-            { icon:'💳', label:'Add Transaction',  path:'/transactions',       color:'#a855f7' },
-            { icon:'🏢', label:'Add Company',      path:'/companies',          color:'#06b6d4' },
-            { icon:'📊', label:'View Reports',     path:'/reports',            color:'#6b7280' },
-          ].map((a,i) => (
+            { icon:'💼', label:'Sales Entry',     path:'/sales',        color:'#1a3c8f' },
+            { icon:'🛒', label:'Purchase Entry',  path:'/purchase',     color:'#16a34a' },
+            { icon:'🔄', label:'Add Trip',        path:'/trips',        color:'#2563eb' },
+            { icon:'⛽', label:'Diesel Entry',    path:'/diesel',       color:'#dc2626' },
+            { icon:'🧾', label:'New Invoice',     path:'/invoices',     color:'#d97706' },
+            { icon:'💳', label:'Add Payment',     path:'/transactions', color:'#7c3aed' },
+            { icon:'🏢', label:'Add Company',     path:'/companies',    color:'#0891b2' },
+            { icon:'📊', label:'View Reports',    path:'/reports',      color:'#64748b' },
+          ].map((a, i) => (
             <a key={i} href={a.path} className="quick-action-btn" style={{ '--qa-color': a.color }}>
-              <span className="quick-action-icon">{a.icon}</span>
+              <span className="quick-action-icon" style={{ background: a.color + '12' }}>{a.icon}</span>
               <span className="quick-action-label">{a.label}</span>
             </a>
           ))}
