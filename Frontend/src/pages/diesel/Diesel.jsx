@@ -11,10 +11,7 @@ const emptyForm = {
   vehicle: '', site: '', entryDate: new Date().toISOString().split('T')[0],
   shift: 'morning', openingLiters: '', closingLiters: '',
   liters: '', ratePerLiter: '', odometerReading: '',
-  fuelStation: '', driver: '', driverName: '',
-  location: '', locationName: '',
-  subLocation: '', subLocationName: '',
-  notes: '',
+  fuelStation: '', driver: '', driverName: '', notes: '',
 };
 
 export default function DieselPage() {
@@ -24,8 +21,6 @@ export default function DieselPage() {
   const [vehicles, setVehicles] = useState([]);
   const [sites, setSites] = useState([]);
   const [drivers, setDrivers] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [subLocations, setSubLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -55,7 +50,6 @@ export default function DieselPage() {
     api.get('/vehicles').then(r => setVehicles(r.data.data));
     api.get('/sites').then(r => setSites(r.data.data));
     api.get('/drivers').then(r => setDrivers(r.data.data || []));
-    api.get('/locations', { params: { parent: 'root' } }).then(r => setLocations(r.data.data || []));
   }, []);
 
   const openSummary = async () => {
@@ -170,7 +164,7 @@ export default function DieselPage() {
               <th>Vehicle</th>
               <th>Site</th>
               <th>Driver</th>
-              <th>Location</th>
+              <th>Liters</th>
               <th>Liters</th>
               <th>Rate/L</th>
               <th>Total Amount</th>
@@ -197,11 +191,6 @@ export default function DieselPage() {
                 </td>
                 <td>{entry.site?.name}</td>
                 <td>{entry.driverName || entry.driver?.name || '—'}</td>
-                <td style={{ fontSize: '0.8rem', color: 'var(--clr-text3)' }}>
-                  {entry.subLocationName
-                    ? `${entry.locationName} › ${entry.subLocationName}`
-                    : entry.locationName || '—'}
-                </td>
                 <td><strong>{formatNumber(entry.liters, 1)} L</strong></td>
                 <td>₹{entry.ratePerLiter}/L</td>
                 <td><strong style={{ color: 'var(--clr-accent)' }}>{formatCurrency(entry.totalAmount)}</strong></td>
@@ -274,35 +263,6 @@ export default function DieselPage() {
             <label className="form-label">Rate per Liter (₹) *</label>
             <input type="number" step="0.01" className="form-control" placeholder="e.g. 95.50" value={form.ratePerLiter} onChange={e => setForm({ ...form, ratePerLiter: e.target.value })} required />
           </div>
-          <div className="form-group">
-            <label className="form-label">Area / Location</label>
-            <select className="form-control" value={form.location}
-              onChange={async e => {
-                const loc = locations.find(l => l._id === e.target.value);
-                setForm(f => ({ ...f, location: e.target.value, locationName: loc?.name || '', subLocation: '', subLocationName: '' }));
-                if (e.target.value) {
-                  const res = await api.get(`/locations/${e.target.value}/children`);
-                  setSubLocations(res.data.data || []);
-                } else { setSubLocations([]); }
-              }}>
-              <option value="">Select Area</option>
-              {locations.map(l => <option key={l._id} value={l._id}>{l.name}</option>)}
-            </select>
-          </div>
-          {subLocations.length > 0 && (
-            <div className="form-group">
-              <label className="form-label">Sub-Location</label>
-              <select className="form-control" value={form.subLocation}
-                onChange={async e => {
-                  const sub = subLocations.find(l => l._id === e.target.value);
-                  setForm(f => ({ ...f, subLocation: e.target.value, subLocationName: sub?.name || '' }));
-                  if (e.target.value) {
-                    const res = await api.get(`/locations/${e.target.value}/children`);
-                    if (res.data.data?.length) setSubLocations(res.data.data);
-                  }
-                }}>
-                <option value="">Select Sub-Location</option>
-                {subLocations.map(l => <option key={l._id} value={l._id}>{l.fullPath || l.name}</option>)}
               </select>
             </div>
           )}
