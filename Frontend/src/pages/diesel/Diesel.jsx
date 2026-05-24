@@ -263,9 +263,8 @@ export default function DieselPage() {
             <label className="form-label">Rate per Liter (₹) *</label>
             <input type="number" step="0.01" className="form-control" placeholder="e.g. 95.50" value={form.ratePerLiter} onChange={e => setForm({ ...form, ratePerLiter: e.target.value })} required />
           </div>
-              </select>
-            </div>
-          )}
+          <div className="form-group">
+            <label className="form-label">Driver</label>
             <select className="form-control" value={form.driver}
               onChange={e => {
                 const d = drivers.find(d => d._id === e.target.value);
