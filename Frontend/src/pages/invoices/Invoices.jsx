@@ -68,8 +68,21 @@ export default function InvoicesPage() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this invoice?')) return;
-    await api.delete(`/invoices/${id}`);
-    fetchInvoices();
+    try {
+      await api.delete(`/invoices/${id}`);
+      fetchInvoices();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
+  const handleViewInvoice = async (id) => {
+    try {
+      const res = await api.get(`/invoices/${id}`);
+      setViewInvoice(res.data.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to load invoice');
+    }
   };
 
   const handlePrint = () => {
@@ -172,7 +185,7 @@ export default function InvoicesPage() {
                 <td><span className={`badge ${statusClass(inv.paymentStatus)}`}>{inv.paymentStatus}</span></td>
                 <td>
                   <div className="flex gap-2">
-                    <button className="btn btn-secondary btn-sm" onClick={async()=>{const r=await api.get(`/invoices/${inv._id}`);setViewInvoice(r.data.data);}}>👁 View</button>
+                    <button className="btn btn-secondary btn-sm" onClick={()=>handleViewInvoice(inv._id)}>👁 View</button>
                     {inv.paymentStatus !== 'paid' && <button className="btn btn-success btn-sm" onClick={()=>setPayModal({open:true,invoice:inv})}>💳 Pay</button>}
                     {can('canDeleteFinancial') && <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(inv._id)}>🗑</button>}
                   </div>
