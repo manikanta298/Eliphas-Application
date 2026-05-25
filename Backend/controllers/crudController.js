@@ -143,7 +143,10 @@ exports.getTrips = async (req, res) => {
     if (site) filter.site = site;
     if (vehicle) filter.vehicle = vehicle;
     if (product) filter.product = product;
-    if (status) filter.status = status;
+    if (status) {
+      const statuses = String(status).split(',').map(s => s.trim()).filter(Boolean);
+      filter.status = statuses.length > 1 ? { $in: statuses } : statuses[0];
+    }
     if (financialYear) filter.financialYear = financialYear;
     if (startDate || endDate) {
       filter.tripDate = {};

@@ -21,6 +21,9 @@ export default function InvoicesPage() {
   const [selectedTrips, setSelectedTrips] = useState([]);
   const [invForm, setInvForm]     = useState({ site:'', gstPercent:18, tdsPercent:0, notes:'', terms:'Payment due within 30 days.', dueDate:'', customer:{ name:'',company:'',address:'',gstin:'',phone:'' } });
   const [payForm, setPayForm]     = useState({ amount:'', mode:'bank', reference:'', date:new Date().toISOString().split('T')[0] });
+  const [invoiceError, setInvoiceError] = useState('');
+  const [invoiceSaving, setInvoiceSaving] = useState(false);
+  const [tripsLoading, setTripsLoading] = useState(false);
   const printRef = useRef();
 
   const fetchInvoices = useCallback(async () => {
@@ -39,22 +42,43 @@ export default function InvoicesPage() {
   }, []);
 
   const loadUnbilledTrips = async (siteId) => {
+    setSelectedTrips([]);
+    setTrips([]);
+    setInvoiceError('');
     if (!siteId) return;
-    const res = await api.get('/trips', { params: { site: siteId, status: 'pending,completed', limit: 200 } });
-    setTrips(res.data.data.filter(t => t.status !== 'invoiced'));
+
+    setTripsLoading(true);
+    try {
+      const res = await api.get('/trips', { params: { site: siteId, status: 'pending,completed', limit: 200 } });
+      setTrips((res.data.data || []).filter(t => t.status !== 'invoiced'));
+    } catch (err) {
+      setInvoiceError(err.response?.data?.message || 'Failed to load trips for this site');
+    } finally {
+      setTripsLoading(false);
+    }
   };
 
   const toggleTrip = (id) => setSelectedTrips(p => p.includes(id) ? p.filter(x=>x!==id) : [...p,id]);
 
   const handleCreateInvoice = async (e) => {
-    e.preventDefault();
-    if (!selectedTrips.length) return alert('Select at least one trip');
+    e?.preventDefault?.();
+    if (!selectedTrips.length) {
+      setInvoiceError('Select at least one trip');
+      return;
+    }
+    setInvoiceSaving(true);
+    setInvoiceError('');
     try {
       await api.post('/invoices/customer', { ...invForm, tripIds: selectedTrips });
       setNewInvModal(false);
       setSelectedTrips([]);
+      setTrips([]);
       fetchInvoices();
-    } catch (err) { alert(err.response?.data?.message || 'Error'); }
+    } catch (err) {
+      setInvoiceError(err.response?.data?.message || 'Invoice creation failed');
+    } finally {
+      setInvoiceSaving(false);
+    }
   };
 
   const handlePayment = async (e) => {
@@ -129,7 +153,7 @@ export default function InvoicesPage() {
           <h2 className="page-title">🧾 Invoice Management</h2>
           <p className="page-subtitle">Generate, track, and manage customer & supplier invoices</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setNewInvModal(true)}>+ Create Invoice</button>
+        <button className="btn btn-primary" onClick={() => { setInvoiceError(''); setNewInvModal(true); }}>+ Create Invoice</button>
       </div>
 
       {/* Filters */}
@@ -200,10 +224,13 @@ export default function InvoicesPage() {
       <Modal isOpen={newInvModal} onClose={()=>setNewInvModal(false)} title="🧾 Create Customer Invoice" size="lg"
         footer={<>
           <button className="btn btn-secondary" onClick={()=>setNewInvModal(false)}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleCreateInvoice} disabled={!selectedTrips.length}>Generate Invoice ({selectedTrips.length} trips)</button>
+          <button className="btn btn-primary" onClick={handleCreateInvoice} disabled={!selectedTrips.length || invoiceSaving}>
+            {invoiceSaving ? 'Generating...' : `Generate Invoice (${selectedTrips.length} trips)`}
+          </button>
         </>}
       >
         <div style={{display:'flex',flexDirection:'column',gap:'var(--sp-5)'}}>
+          {invoiceError && <div className="alert alert-error">{invoiceError}</div>}
           {/* Customer Info */}
           <div>
             <h4 style={{marginBottom:'var(--sp-3)',color:'var(--clr-text2)',fontSize:'0.8rem',textTransform:'uppercase',letterSpacing:'.06em'}}>Customer Details</h4>
@@ -240,6 +267,12 @@ export default function InvoicesPage() {
           </div>
 
           {/* Trip selection */}
+          {tripsLoading && <div className="loading-center"><div className="spinner" /></div>}
+          {!tripsLoading && invForm.site && trips.length === 0 && (
+            <div className="empty-state">
+              <p>No pending or completed trips found for this site.</p>
+            </div>
+          )}
           {trips.length > 0 && (
             <div>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'var(--sp-3)'}}>
