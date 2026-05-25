@@ -91,3 +91,12 @@
 @media (max-width: 480px) {
   .login-card { padding: 28px 20px; }
 }
+
+/* Spinning dots */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
