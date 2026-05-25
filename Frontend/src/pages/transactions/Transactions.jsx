@@ -19,6 +19,20 @@ const EMPTY_FORM = {
   site: '',
 };
 
+const buildTransactionPayload = (form, financialYear) => {
+  const payload = {
+    ...form,
+    financialYear,
+    amount: Number(form.amount),
+  };
+
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === '') delete payload[key];
+  });
+
+  return payload;
+};
+
 export default function TransactionsPage() {
   const { can } = useAuth();
   const { selectedFY } = useFY();
@@ -62,7 +76,7 @@ export default function TransactionsPage() {
     if (!form.amount || !form.date) { setError('Amount and Date are required'); return; }
     setSaving(true); setError('');
     try {
-      await api.post('/transactions', { ...form, financialYear: selectedFY?.label, amount: Number(form.amount) });
+      await api.post('/transactions', buildTransactionPayload(form, selectedFY?.label));
       setModal(false);
       setForm(EMPTY_FORM);
       fetchTxns();

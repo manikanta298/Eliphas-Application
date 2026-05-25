@@ -1,10 +1,94 @@
 const Invoice = require('../models/Invoice');
 const Trip = require('../models/Trip');
+const Company = require('../models/Company');
+
+const compact = (obj) => Object.fromEntries(
+  Object.entries(obj).filter(([, value]) => value !== undefined && value !== null && value !== '')
+);
+
+const toNumber = (value, fallback = 0) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const normalizeCustomer = async ({ customer, customerName }) => {
+  if (customer && typeof customer === 'object' && !Array.isArray(customer)) return customer;
+
+  if (customer) {
+    const company = await Company.findById(customer).lean();
+    if (company) {
+      return compact({
+        name: company.name,
+        company: company.name,
+        address: company.address,
+        gstin: company.gstin,
+        phone: company.phone,
+        email: company.email,
+      });
+    }
+  }
+
+  return customerName ? { name: customerName, company: customerName } : undefined;
+};
 
 // Create customer invoice from trips
 exports.createCustomerInvoice = async (req, res) => {
   try {
-    const { site, tripIds, customer, gstPercent, tdsPercent, notes, terms, dueDate } = req.body;
+    const {
+      site, tripIds = [], customer, customerName, gstPercent, tdsPercent,
+      notes, terms, dueDate, financialYear, invoiceDate,
+    } = req.body;
+
+    const normalizedCustomer = await normalizeCustomer({ customer, customerName });
+
+    // Manual sales invoices are created directly from entered items, not trips.
+    if (!tripIds.length && Array.isArray(req.body.items) && req.body.items.length) {
+      const items = req.body.items.map((item) => ({
+        ...compact({
+          product: item.product,
+          description: item.description || 'Supply',
+          billingType: item.billingType,
+          unit: item.unit,
+        }),
+        quantity: toNumber(item.quantity),
+        weight: toNumber(item.weight),
+        kilometers: toNumber(item.kilometers),
+        rate: toNumber(item.rate ?? item.basePrice),
+        amount: toNumber(item.amount),
+        trips: toNumber(item.trips),
+        supplierRate: toNumber(item.supplierRate),
+        supplierAmount: toNumber(item.supplierAmount),
+      }));
+
+      const subtotal = toNumber(req.body.subtotal, items.reduce((sum, item) => sum + item.amount, 0));
+      const gstRate = toNumber(gstPercent, 18);
+      const tdsRate = toNumber(tdsPercent, 0);
+      const gstAmount = toNumber(req.body.gstAmount, (subtotal * gstRate) / 100);
+      const tdsAmount = toNumber(req.body.tdsAmount, (subtotal * tdsRate) / 100);
+      const totalAmount = toNumber(req.body.totalAmount, subtotal + gstAmount - tdsAmount);
+
+      const invoice = await Invoice.create(compact({
+        invoiceType: req.body.invoiceType || 'customer',
+        financialYear,
+        invoiceDate,
+        site,
+        customer: normalizedCustomer,
+        items,
+        subtotal,
+        gstPercent: gstRate,
+        gstAmount,
+        tdsPercent: tdsRate,
+        tdsAmount,
+        totalAmount,
+        dueDate,
+        notes,
+        terms,
+        createdBy: req.user._id,
+      }));
+
+      await invoice.populate('site', 'name code clientCompany');
+      return res.status(201).json({ success: true, data: invoice });
+    }
 
     const trips = await Trip.find({ _id: { $in: tripIds }, isDeleted: false })
       .populate('product', 'name unit gstPercent tdsPercent');
@@ -39,13 +123,13 @@ exports.createCustomerInvoice = async (req, res) => {
     const totalDieselExpense = trips.reduce((s, t) => s + (t.dieselExpense || 0), 0);
 
     const invoice = await Invoice.create({
-      invoiceType: 'customer', site, customer,
+      invoiceType: 'customer', site, customer: normalizedCustomer,
       trips: tripIds, items,
       subtotal, gstPercent, gstAmount: gstAmt,
       tdsPercent, tdsAmount: tdsAmt,
       totalAmount,
       totalSupplierCost, totalVendorExpense, totalDieselExpense,
-      dueDate, notes, terms,
+      dueDate, notes, terms, financialYear, invoiceDate,
       createdBy: req.user._id,
     });
 

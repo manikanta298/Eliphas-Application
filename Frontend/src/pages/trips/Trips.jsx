@@ -16,6 +16,27 @@ const emptyForm = {
   driverName:'', loadingPoint:'', unloadingPoint:'', status:'pending',
 };
 
+const optionalNumberFields = [
+  'quantity', 'weight', 'kilometers', 'hours', 'days',
+  'supplierRate', 'vendorExpense', 'dieselExpense', 'gstAmount', 'tdsAmount',
+];
+
+const buildTripPayload = (form, financialYear) => {
+  const payload = { ...form, financialYear };
+
+  optionalNumberFields.forEach((field) => {
+    if (payload[field] === '') delete payload[field];
+    else payload[field] = Number(payload[field]);
+  });
+
+  payload.rateApplied = Number(payload.rateApplied);
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === '') delete payload[key];
+  });
+
+  return payload;
+};
+
 export default function TripsPage() {
   const { can } = useAuth();
   const { selectedFY } = useFY();
@@ -74,8 +95,9 @@ export default function TripsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editTrip) await api.put(`/trips/${editTrip._id}`, form);
-      else await api.post('/trips', form);
+      const payload = buildTripPayload(form, selectedFY?.label);
+      if (editTrip) await api.put(`/trips/${editTrip._id}`, payload);
+      else await api.post('/trips', payload);
       setModalOpen(false);
       fetchTrips();
     } catch (err) { alert(err.response?.data?.message || 'Error'); }

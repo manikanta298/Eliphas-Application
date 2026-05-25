@@ -8,6 +8,7 @@ const { protect, authorize } = require('../middleware/auth');
 router.use(protect);
 router.get('/', getInvoices);
 router.get('/:id', getInvoice);
+router.post('/', authorize('masterAdmin','admin','manager'), createCustomerInvoice);
 router.post('/customer', authorize('masterAdmin','admin','manager'), createCustomerInvoice);
 router.post('/supplier', authorize('masterAdmin','admin'), createSupplierInvoice);
 router.post('/:id/payment', authorize('masterAdmin','admin','manager'), recordPayment);

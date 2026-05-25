@@ -4,6 +4,10 @@ const Product = require('../models/Product');
 const Trip = require('../models/Trip');
 const Contract = require('../models/Contract');
 
+const compact = (obj) => Object.fromEntries(
+  Object.entries(obj).filter(([, value]) => value !== undefined && value !== null && value !== '')
+);
+
 // ─── SITE CONTROLLERS ───────────────────────────────────────────
 exports.getSites = async (req, res) => {
   try {
@@ -189,7 +193,7 @@ exports.getTrips = async (req, res) => {
 
 exports.createTrip = async (req, res) => {
   try {
-    const trip = await Trip.create({ ...req.body, enteredBy: req.user._id });
+    const trip = await Trip.create(compact({ ...req.body, enteredBy: req.user._id }));
     await trip.populate([
       { path: 'site', select: 'name code' },
       { path: 'vehicle', select: 'vehicleNumber driverName' },
@@ -205,7 +209,7 @@ exports.updateTrip = async (req, res) => {
   try {
     const trip = await Trip.findOneAndUpdate(
       { _id: req.params.id, isDeleted: false },
-      req.body, { new: true, runValidators: true }
+      compact(req.body), { new: true, runValidators: true }
     ).populate('site vehicle product', 'name vehicleNumber category');
     if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
     res.json({ success: true, data: trip });

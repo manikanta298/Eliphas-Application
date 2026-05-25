@@ -1,6 +1,10 @@
 const Transaction = require('../models/Transaction');
 const mongoose = require('mongoose');
 
+const compact = (obj) => Object.fromEntries(
+  Object.entries(obj).filter(([, value]) => value !== undefined && value !== null && value !== '')
+);
+
 exports.getTransactions = async (req, res) => {
   try {
     const { financialYear, site, type, category, partyType, startDate, endDate, page = 1, limit = 50 } = req.query;
@@ -70,7 +74,7 @@ exports.getTransaction = async (req, res) => {
 
 exports.createTransaction = async (req, res) => {
   try {
-    const txn = await Transaction.create({ ...req.body, createdBy: req.user._id });
+    const txn = await Transaction.create(compact({ ...req.body, createdBy: req.user._id }));
     await txn.populate('site party');
     res.status(201).json({ success: true, data: txn });
   } catch (err) {
