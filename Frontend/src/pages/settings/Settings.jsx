@@ -1,3 +1,4 @@
+import './Settings.css';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFY } from '../../contexts/FinancialYearContext';

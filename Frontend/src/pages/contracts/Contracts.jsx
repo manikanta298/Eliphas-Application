@@ -1,3 +1,4 @@
+import './Contracts.css';
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import Modal from '../../components/common/Modal';
