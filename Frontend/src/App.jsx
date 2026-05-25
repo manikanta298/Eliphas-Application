@@ -89,8 +89,8 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login"    element={<Login />} />
-      <Route path="/fy-select" element={user ? <FYSelectPage /> : <Navigate to="/login" replace />} />
-      <Route path="/*"        element={user ? <AppLayout /> : <Navigate to="/login" replace />} />
+      <Route path="/fy-select" element={user ? <FinancialYearProvider><FYSelectPage /></FinancialYearProvider> : <Navigate to="/login" replace />} />
+      <Route path="/*"        element={user ? <FinancialYearProvider><AppLayout /></FinancialYearProvider> : <Navigate to="/login" replace />} />
     </Routes>
   );
 }
@@ -98,9 +98,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <FinancialYearProvider>
-        <AppRoutes />
-      </FinancialYearProvider>
+      <AppRoutes />
     </AuthProvider>
   );
 }

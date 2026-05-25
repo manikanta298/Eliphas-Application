@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         setUser(null);
+        window.dispatchEvent(new CustomEvent('auth:logout'));
       } finally {
         setLoading(false);
       }
