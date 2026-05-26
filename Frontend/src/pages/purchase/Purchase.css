@@ -1,0 +1,13 @@
+/* Purchase page */
+.purchase-calc-box {
+  background:linear-gradient(135deg,#eef2ff,#f0f4ff);
+  border:1px solid rgba(26,60,143,0.15); border-radius:var(--r-lg);
+  padding:16px 20px;
+}
+.purchase-calc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; text-align:center; }
+.purchase-calc-item-label { font-size:0.7rem; color:var(--clr-text3); text-transform:uppercase; font-weight:600; }
+.purchase-calc-item-value { font-size:1rem; font-weight:800; color:var(--clr-primary); margin-top:3px; }
+.purchase-total { display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid rgba(26,60,143,0.15); }
+.purchase-total-label { font-size:0.82rem; font-weight:600; color:var(--clr-text3); }
+.purchase-total-value { font-family:var(--font-display); font-size:1.5rem; font-weight:900; color:var(--clr-primary); }
+@media (max-width:767px) { .purchase-calc-grid { grid-template-columns:repeat(2,1fr); } }

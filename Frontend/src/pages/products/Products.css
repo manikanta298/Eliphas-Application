@@ -1,0 +1,5 @@
+/* Products page */
+.product-rate-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.rate-badge { background:#eef2ff; border:1px solid rgba(26,60,143,0.15); border-radius:8px; padding:8px 12px; text-align:center; }
+.rate-badge-label { font-size:0.68rem; color:var(--clr-text3); text-transform:uppercase; font-weight:600; }
+.rate-badge-value { font-size:1rem; font-weight:800; color:var(--clr-primary); margin-top:2px; }

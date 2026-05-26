@@ -1,0 +1,6 @@
+/* Users page */
+.user-role-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+.role-masterAdmin { background:#fef2f2; color:#dc2626; border:1px solid rgba(220,38,38,0.2); }
+.role-admin { background:#eef2ff; color:#1a3c8f; border:1px solid rgba(26,60,143,0.2); }
+.role-manager { background:#f0fdf4; color:#16a34a; border:1px solid rgba(22,163,74,0.2); }
+.role-staff { background:#fffbeb; color:#d97706; border:1px solid rgba(217,119,6,0.2); }

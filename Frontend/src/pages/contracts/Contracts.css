@@ -1,0 +1,4 @@
+/* Contracts page */
+.contract-active { border-left:4px solid #16a34a !important; }
+.contract-expired { border-left:4px solid #dc2626 !important; }
+.contract-pending { border-left:4px solid #d97706 !important; }

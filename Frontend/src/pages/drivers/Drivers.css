@@ -1,0 +1,3 @@
+/* Drivers page */
+.driver-license-warn { background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; color:#d97706; }
+.driver-license-expired { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }

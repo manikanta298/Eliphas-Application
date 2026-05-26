@@ -1,0 +1,5 @@
+/* Companies page */
+.company-type-supplier { background:#fffbeb; color:#d97706; border:1px solid rgba(217,119,6,0.2); }
+.company-type-customer { background:#eef2ff; color:#1a3c8f; border:1px solid rgba(26,60,143,0.2); }
+.company-type-vendor  { background:#f5f3ff; color:#7c3aed; border:1px solid rgba(124,58,237,0.2); }
+.company-type-both    { background:#f0fdf4; color:#16a34a; border:1px solid rgba(22,163,74,0.2); }

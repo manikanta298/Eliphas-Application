@@ -1,0 +1,14 @@
+/* Sites page */
+.site-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:4px; }
+
+.site-card {
+  background:#fff; border:1px solid var(--clr-border); border-radius:var(--r-lg);
+  padding:20px; box-shadow:var(--shadow-xs);
+  transition:transform 0.15s, box-shadow 0.15s;
+  border-top:3px solid var(--clr-primary);
+  cursor:pointer;
+}
+.site-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+.site-card-name { font-family:var(--font-display); font-size:1rem; font-weight:800; color:var(--clr-primary); margin-bottom:6px; }
+.site-card-meta { font-size:0.8rem; color:var(--clr-text3); display:flex; flex-direction:column; gap:3px; }
+.site-card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--clr-border); }
