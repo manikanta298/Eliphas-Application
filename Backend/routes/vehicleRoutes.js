@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const { getVehicles, createVehicle, updateVehicle, deleteVehicle } = require('../controllers/crudController');
+const { protect, authorize } = require('../middleware/auth');
+router.use(protect);
+router.get('/', getVehicles);
+router.post('/', authorize('masterAdmin','admin','manager'), createVehicle);
+router.put('/:id', authorize('masterAdmin','admin','manager'), updateVehicle);
+router.delete('/:id', authorize('masterAdmin','admin'), deleteVehicle);
+module.exports = router;

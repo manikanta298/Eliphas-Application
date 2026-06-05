@@ -1,0 +1,25 @@
+/* Trips / Transport page */
+.trip-status-completed { background:#f0fdf4; color:#16a34a; }
+.trip-status-in_progress { background:#eef2ff; color:#1a3c8f; }
+.trip-status-cancelled { background:#fef2f2; color:#dc2626; }
+.trip-calc-row { display:flex; justify-content:space-between; padding:6px 0; font-size:0.875rem; border-bottom:1px solid var(--clr-border); }
+.trip-calc-total { display:flex; justify-content:space-between; padding:10px 0; border-top:2px solid var(--clr-primary); font-weight:800; color:var(--clr-primary); font-size:1.05rem; margin-top:4px; }
+
+/* Responsive Trips */
+@media (max-width: 768px) {
+  .trips-form-grid { grid-template-columns: 1fr !important; }
+  .trips-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .trips-table-wrap table { min-width: 700px; }
+  .trips-filter-bar { flex-direction: column; }
+  .trips-filter-bar input,
+  .trips-filter-bar select { width: 100% !important; }
+}
+@media (max-width: 480px) {
+  .trips-modal { padding: 12px !important; }
+}
+
+/* Trips table spacing */
+.trips-table .table th, .trips-table .table td { min-width: 90px; }
+.trips-table .table th:nth-child(1) { min-width: 110px; } /* Trip # */
+.trips-table .table th:nth-child(2) { min-width: 100px; } /* Date */
+.trips-table .table th:nth-child(10) { min-width: 140px; } /* From → To */

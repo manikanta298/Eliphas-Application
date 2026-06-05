@@ -1,0 +1,102 @@
+/* ═════════════════════════════════════════════
+   LOGIN — Matching DOG'S DASHBOARD image style
+═════════════════════════════════════════════ */
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e8eeff 0%, #f0f4ff 40%, #e4edff 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; position: relative; overflow: hidden;
+  font-family: var(--font-body);
+}
+
+/* Background decorations */
+.login-page::before {
+  content: '';
+  position: absolute; top: -120px; right: -120px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,60,143,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.login-page::after {
+  content: '';
+  position: absolute; bottom: -100px; left: -100px;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-card {
+  background: #fff;
+  border: 1px solid #dde3f0;
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 8px 40px rgba(26,60,143,0.12);
+  position: relative; z-index: 1;
+  animation: slideUp 0.4s ease;
+}
+
+/* Logo/Brand */
+.login-brand { text-align: center; margin-bottom: 28px; }
+.login-logo {
+  width: 70px; height: 70px; border-radius: 18px;
+  background: linear-gradient(135deg, var(--clr-primary) 0%, #2563eb 100%);
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; box-shadow: 0 8px 24px rgba(26,60,143,0.3);
+}
+.login-brand-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--clr-primary); }
+.login-brand-tag { font-size: 0.78rem; color: var(--clr-text3); margin-top: 3px; }
+
+/* Form */
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+.login-form-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--clr-text); text-align: center; margin-bottom: 4px; }
+
+.login-field { display: flex; flex-direction: column; gap: 6px; }
+.login-label { font-size: 0.8rem; font-weight: 600; color: var(--clr-text2); }
+.login-input-wrap { position: relative; }
+.login-input {
+  width: 100%; padding: 11px 14px;
+  background: #f5f7ff; border: 1.5px solid #dde3f0;
+  border-radius: 10px; font-size: 0.9rem; color: var(--clr-text);
+  outline: none; transition: all 0.15s ease;
+  font-family: var(--font-body);
+}
+.login-input:focus { border-color: var(--clr-primary); background: #fff; box-shadow: 0 0 0 3px rgba(26,60,143,0.08); }
+.login-input::placeholder { color: #94a3b8; }
+.login-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1rem; padding: 4px; transition: color 0.15s; }
+.login-eye:hover { color: var(--clr-primary); }
+
+.login-remember { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--clr-text2); cursor: pointer; }
+.login-remember input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--clr-primary); cursor: pointer; }
+
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--clr-primary) 0%, #2563eb 100%);
+  color: #fff; border: none; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 700; cursor: pointer;
+  font-family: var(--font-display); letter-spacing: 0.01em;
+  box-shadow: 0 4px 16px rgba(26,60,143,0.3);
+  transition: all 0.15s ease; margin-top: 4px;
+}
+.login-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0f2460 0%, var(--clr-primary) 100%); box-shadow: 0 6px 20px rgba(26,60,143,0.4); transform: translateY(-1px); }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.login-forgot { text-align: center; margin-top: 4px; }
+.login-forgot a { font-size: 0.82rem; color: var(--clr-primary); font-weight: 600; text-decoration: none; }
+.login-forgot a:hover { text-decoration: underline; }
+
+.login-error { background: #fef2f2; border: 1px solid rgba(220,38,38,0.25); border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; color: #dc2626; display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 28px 20px; }
+}
+
+/* Spinning dots */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

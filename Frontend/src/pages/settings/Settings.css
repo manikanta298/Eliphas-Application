@@ -1,0 +1,13 @@
+/* Settings page */
+.settings-layout { display:flex; gap:24px; align-items:flex-start; }
+.settings-sidebar { width:200px; flex-shrink:0; background:#fff; border:1px solid var(--clr-border); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-xs); }
+.settings-nav-btn { width:100%; padding:12px 16px; border:none; background:none; cursor:pointer; text-align:left; font-size:0.84rem; font-weight:600; color:var(--clr-text2); border-bottom:1px solid var(--clr-border); transition:all 0.15s; display:flex; align-items:center; gap:8px; }
+.settings-nav-btn:last-child { border-bottom:none; }
+.settings-nav-btn:hover { background:var(--clr-primary-dim); color:var(--clr-primary); }
+.settings-nav-btn.active { background:var(--clr-primary); color:#fff; }
+.settings-content { flex:1; background:#fff; border:1px solid var(--clr-border); border-radius:var(--r-lg); padding:24px; box-shadow:var(--shadow-xs); min-height:400px; }
+.settings-section-title { font-family:var(--font-display); font-size:1.05rem; font-weight:800; color:var(--clr-primary); margin-bottom:6px; }
+.settings-section-desc { font-size:0.82rem; color:var(--clr-text3); margin-bottom:20px; }
+.settings-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.settings-save-btn { margin-top:20px; }
+@media (max-width:767px) { .settings-layout { flex-direction:column; } .settings-sidebar { width:100%; } .settings-form-grid { grid-template-columns:1fr; } }

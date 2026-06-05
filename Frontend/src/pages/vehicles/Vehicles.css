@@ -1,0 +1,9 @@
+/* Vehicles page */
+.vehicle-type-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; background:#eef2ff; color:#1a3c8f; border:1px solid rgba(26,60,143,0.15); }
+.vehicle-own { background:#eef2ff; color:#1a3c8f; }
+.vehicle-vendor { background:#f5f3ff; color:#7c3aed; }
+.vehicle-status-active { color:#16a34a; }
+.vehicle-status-inactive { color:#dc2626; }
+
+/* Vehicles table spacing */
+.vehicles-table .table th, .vehicles-table .table td { min-width: 90px; }

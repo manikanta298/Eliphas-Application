@@ -1,0 +1,11 @@
+const express = require('express');
+const router = express.Router();
+const { createEntry, getEntries, getVehicleSummary, updateEntry, deleteEntry } = require('../controllers/dieselController');
+const { protect, authorize } = require('../middleware/auth');
+router.use(protect);
+router.get('/', getEntries);
+router.post('/', createEntry);
+router.get('/summary', getVehicleSummary);
+router.put('/:id', updateEntry);
+router.delete('/:id', authorize('masterAdmin','admin','manager'), deleteEntry);
+module.exports = router;

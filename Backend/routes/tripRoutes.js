@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const { getTrips, createTrip, updateTrip, deleteTrip } = require('../controllers/crudController');
+const { protect, authorize } = require('../middleware/auth');
+router.use(protect);
+router.get('/', getTrips);
+router.post('/', createTrip);
+router.put('/:id', authorize('masterAdmin','admin','manager'), updateTrip);
+router.delete('/:id', authorize('masterAdmin','admin','manager'), deleteTrip);
+module.exports = router;

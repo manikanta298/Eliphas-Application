@@ -1,0 +1,49 @@
+/* Invoices page */
+.inv-preview-box {
+  background:#f8faff; border:1px solid var(--clr-border);
+  border-radius:var(--r-md); padding:var(--sp-5);
+  display:flex; flex-direction:column; gap:var(--sp-2);
+}
+.inv-preview-row {
+  display:flex; justify-content:space-between;
+  font-size:0.875rem; color:var(--clr-text2); padding:4px 0;
+  border-bottom:1px solid var(--clr-border);
+}
+.inv-preview-row:last-child { border-bottom:none; }
+.inv-preview-total {
+  display:flex; justify-content:space-between;
+  border-top:2px solid var(--clr-primary);
+  padding-top:var(--sp-3); margin-top:var(--sp-2);
+  font-size:1.05rem; font-weight:800; color:var(--clr-primary);
+}
+
+/* Print Invoice */
+.invoice-print {
+  background:white; color:#111; padding:var(--sp-6);
+  border-radius:var(--r-lg); font-family:'Inter',sans-serif;
+}
+.inv-header {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:var(--sp-6); padding-bottom:var(--sp-5);
+  border-bottom:3px solid #1a3c8f;
+}
+.inv-company-name { font-size:1.4rem; font-weight:900; color:#1a3c8f; }
+.inv-company-tag { font-size:0.75rem; color:#64748b; }
+.inv-number { font-size:0.75rem; color:#64748b; text-align:right; }
+.inv-number strong { display:block; font-size:1.1rem; color:#1a3c8f; }
+.inv-customer-section { margin-bottom:var(--sp-5); padding:14px; background:#f8faff; border-radius:8px; border-left:4px solid #1a3c8f; }
+.inv-customer-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700; }
+.inv-customer-name { font-size:1rem; font-weight:700; color:#1a3c8f; margin-top:2px; }
+.inv-table { width:100%; border-collapse:collapse; margin:var(--sp-5) 0; }
+.inv-table th { background:#1a3c8f; color:#fff; padding:9px 12px; font-size:0.8rem; text-align:left; }
+.inv-table td { padding:9px 12px; border-bottom:1px solid #e8eeff; font-size:0.875rem; }
+.inv-totals { margin-left:auto; width:300px; }
+.inv-total-row { display:flex; justify-content:space-between; padding:6px 0; font-size:0.875rem; border-bottom:1px solid #e8eeff; }
+.inv-total-net { display:flex; justify-content:space-between; padding:10px 0; border-top:2px solid #1a3c8f; font-size:1.05rem; font-weight:900; color:#1a3c8f; margin-top:4px; }
+.inv-footer { text-align:center; margin-top:40px; font-size:0.75rem; color:#94a3b8; padding-top:16px; border-top:1px solid #e8eeff; }
+.inv-action-btns { display:flex; gap:10px; margin-top:16px; }
+
+@media print {
+  .inv-action-btns { display:none; }
+  body { background:white !important; }
+}
