@@ -4,8 +4,8 @@ const tripSchema = new mongoose.Schema({
   tripNumber:    { type: String, unique: true },
   financialYear: { type: String, default: '' },
   site:     { type: mongoose.Schema.Types.ObjectId, ref: 'Site',     required: true },
-  vehicle:  { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle',  required: true },
-  product:  { type: mongoose.Schema.Types.ObjectId, ref: 'Product',  required: true },
+  vehicle:  { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle' },
+  product:  { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
   contract: { type: mongoose.Schema.Types.ObjectId, ref: 'Contract' },
   company:  { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },   // customer company
   supplier: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },   // supplier company
