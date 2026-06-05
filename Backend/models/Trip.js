@@ -16,18 +16,33 @@ const tripSchema = new mongoose.Schema({
   // Simplified billing type — only Weight(Ton) or Fixed Contract
   billingType: {
     type: String,
-    enum: ['ton', 'fixed'],
+    enum: ['trip', 'contract', 'perTon', 'machine', 'ton', 'fixed'],
     required: true,
-    default: 'ton',
+    default: 'trip',
   },
 
+  // Billing entry fields (from Add Billing form)
+  clientName:          { type: String },
+  companyName:         { type: String },
+  phoneNumber:         { type: String },
+  challanNumber:       { type: String },
+  loadType:            { type: String },
+  unitValue:           { type: Number, default: 0 },
+  companyRate:         { type: Number, default: 0 },
+  companyFare:         { type: Number, default: 0 },  // auto: companyRate × unitValue
+  tripTime:            { type: String },
+
   // Measurements
-  quantity: { type: Number, default: 0 },   // tons (used when billingType = 'ton')
+  quantity: { type: Number, default: 0 },
 
-  // Rates
-  rateApplied: { type: Number, required: true },
+  // Rates (client side)
+  rateApplied: { type: Number, default: 0 },
 
-  // Supplier / purchase side (hidden from customer)
+  // Diesel
+  dieselQuantity:      { type: Number, default: 0 },
+  dieselPricePerLitre: { type: Number, default: 0 },
+
+  // Supplier / purchase side
   supplierRate:   { type: Number, default: 0 },
   supplierCost:   { type: Number, default: 0 },
   vendorExpense:  { type: Number, default: 0 },
@@ -68,16 +83,23 @@ tripSchema.pre('save', async function (next) {
     this.tripNumber = `TRP-${String(count + 1).padStart(6, '0')}`;
   }
 
-  // Calculate base amount
-  if (this.billingType === 'ton') {
-    this.baseAmount = this.rateApplied * (this.quantity || 0);
+  // Auto-calc companyFare and dieselExpense from entry fields
+  this.companyFare  = (this.companyRate || 0) * (this.unitValue || 0);
+  this.dieselExpense = (this.dieselQuantity || 0) * (this.dieselPricePerLitre || 0);
+
+  // Calculate client base amount
+  const uv = this.unitValue || this.quantity || 0;
+  if (['ton', 'perTon'].includes(this.billingType)) {
+    this.baseAmount = (this.rateApplied || 0) * uv;
+  } else if (this.billingType === 'machine') {
+    this.baseAmount = (this.rateApplied || 0) * uv;
   } else {
-    // fixed
-    this.baseAmount = this.rateApplied;
+    // trip / contract / fixed
+    this.baseAmount = this.rateApplied || 0;
   }
 
   this.totalCustomerAmount = this.baseAmount + (this.gstAmount || 0) - (this.tdsAmount || 0);
-  this.supplierCost  = this.supplierRate * (this.quantity || 1);
+  this.supplierCost  = (this.supplierRate || 0) * (uv || 1);
   this.netProfit     = this.baseAmount - this.supplierCost - (this.vendorExpense || 0) - (this.dieselExpense || 0);
   this.profitMargin  = this.baseAmount > 0
     ? parseFloat(((this.netProfit / this.baseAmount) * 100).toFixed(2))
