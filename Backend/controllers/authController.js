@@ -178,6 +178,7 @@ exports.requestPasswordOtp = async (req, res) => {
     if (!user) return res.json({ success:true, message:'If that email exists, an OTP has been sent.' });
 
     const otp = String(crypto.randomInt(100000, 1000000));
+    if (process.env.NODE_ENV !== 'production') console.log(`🔐 Password reset OTP for ${user.email}: ${otp}`);
     const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
 
     user.resetPasswordToken = hashedOtp;
