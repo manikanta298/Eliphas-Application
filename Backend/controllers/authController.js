@@ -167,6 +167,65 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+// ── Forgot Password OTP — secure 6-digit email verification ─────
+exports.requestPasswordOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success:false, message:'Email is required' });
+
+    const user = await User.findOne({ email: email.toLowerCase(), isActive:true });
+    // Do not reveal whether an account exists.
+    if (!user) return res.json({ success:true, message:'If that email exists, an OTP has been sent.' });
+
+    const otp = String(crypto.randomInt(100000, 1000000));
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+    user.resetPasswordToken = hashedOtp;
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save({ validateBeforeSave:false });
+
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: user.email,
+      subject: 'Your Eliphas ERP password reset OTP',
+      text: `Your Eliphas ERP password reset OTP is ${otp}. It expires in 10 minutes. If you did not request this, ignore this email.`,
+      html: `<div style="font-family:Arial,sans-serif"><h2>Eliphas ERP</h2><p>Your password reset OTP is:</p><h1 style="letter-spacing:6px">${otp}</h1><p>This OTP expires in <b>10 minutes</b> and can be used once.</p><p>If you did not request this, ignore this email.</p></div>`,
+    });
+
+    res.json({ success:true, message:'OTP sent to your email.' });
+  } catch (err) {
+    console.error('OTP request error:', err.message);
+    res.status(500).json({ success:false, message:'Failed to send OTP. Check email configuration.' });
+  }
+};
+
+exports.verifyPasswordOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ success:false, message:'Email and OTP are required' });
+
+    const hashedOtp = crypto.createHash('sha256').update(String(otp)).digest('hex');
+    const user = await User.findOne({
+      email: email.toLowerCase(), isActive:true,
+      resetPasswordToken: hashedOtp,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) return res.status(400).json({ success:false, message:'Invalid or expired OTP.' });
+
+    // Issue a short-lived one-time reset token after OTP verification.
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save({ validateBeforeSave:false });
+
+    res.json({ success:true, data:{ resetToken }, message:'OTP verified.' });
+  } catch (err) {
+    res.status(500).json({ success:false, message:err.message });
+  }
+};
+
 // ── Reset Password — verify token + set new password ───────────
 exports.resetPassword = async (req, res) => {
   try {
