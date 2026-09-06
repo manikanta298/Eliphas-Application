@@ -66,6 +66,15 @@ connectDB().then(async () => {
 
 const app = express();
 
+// Root endpoint for Render/service health checks
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'LogiCore ERP API is running',
+    health: '/api/health'
+  });
+});
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
