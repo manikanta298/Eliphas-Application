@@ -171,7 +171,6 @@ exports.forgotPassword = async (req, res) => {
 exports.requestPasswordOtp = async (req, res) => {
   console.log('📨 Forgot-password OTP request received:', req.body?.email);
   try {
-  try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success:false, message:'Email is required' });
 
