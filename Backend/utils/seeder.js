@@ -50,7 +50,7 @@ const seed = async () => {
   const manager = await User.create({
     name: 'Site Manager',
     email: 'manager@erp.com',
-    password: 'Manager@123',
+    password: 'Admin@123',
     role: 'manager',
     phone: '7777777777',
   });
@@ -129,7 +129,7 @@ const seed = async () => {
   console.log('─────────────────────────────────────');
   console.log('Master Admin: masteradmin@erp.com / Admin@123');
   console.log('Admin:        admin@erp.com / Admin@123');
-  console.log('Manager:      manager@erp.com / Manager@123');
+  console.log('Manager:      manager@erp.com / Admin@123');
   console.log('─────────────────────────────────────');
   process.exit(0);
 };
