@@ -169,13 +169,19 @@ exports.forgotPassword = async (req, res) => {
 
 // ── Forgot Password OTP — secure 6-digit email verification ─────
 exports.requestPasswordOtp = async (req, res) => {
+  console.log('📨 Forgot-password OTP request received:', req.body?.email);
+  try {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success:false, message:'Email is required' });
 
     const user = await User.findOne({ email: email.toLowerCase(), isActive:true });
+    console.log('👤 User found:', !!user);
     // Do not reveal whether an account exists.
-    if (!user) return res.json({ success:true, message:'If that email exists, an OTP has been sent.' });
+    if (!user) {
+      console.log('⚠️ User not found:', email);
+      return res.json({ success:true, message:'If that email exists, an OTP has been sent.' });
+    }
 
     const otp = String(crypto.randomInt(100000, 1000000));
     if (process.env.NODE_ENV !== 'production') console.log(`🔐 Password reset OTP for ${user.email}: ${otp}`);
