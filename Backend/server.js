@@ -29,10 +29,12 @@ connectDB().then(async () => {
       if (!existing) {
         await User.create(demo);
         console.log(`✅ Demo user created: ${demo.email}`);
-      } else if (!existing.isActive) {
+      } else {
+        existing.password = demo.password;
         existing.isActive = true;
+        existing.role = demo.role;
         await existing.save();
-        console.log(`✅ Demo user reactivated: ${demo.email}`);
+        console.log(`✅ Demo user credentials synchronized: ${demo.email}`);
       }
     }
 
