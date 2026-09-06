@@ -17,26 +17,35 @@ connectDB().then(async () => {
 
   try {
     const User = require('./models/User');
+    const demoUsers = [
+      { name: 'Master Admin', email: 'masteradmin@erp.com', password: 'Admin@123', role: 'masterAdmin', phone: '9999999999' },
+      { name: 'Admin User', email: 'admin@erp.com', password: 'Admin@123', role: 'admin', phone: '8888888888' },
+      { name: 'Site Manager', email: 'manager@erp.com', password: 'Admin@123', role: 'manager', phone: '7777777777' },
+    ];
+
+    // Always ensure the demo accounts exist, even if MongoDB already has other users.
+    for (const demo of demoUsers) {
+      const existing = await User.findOne({ email: demo.email });
+      if (!existing) {
+        await User.create(demo);
+        console.log(`✅ Demo user created: ${demo.email}`);
+      } else if (!existing.isActive) {
+        existing.isActive = true;
+        await existing.save();
+        console.log(`✅ Demo user reactivated: ${demo.email}`);
+      }
+    }
+
+    // Keep operational seed data for a database containing only the demo accounts.
     const count = await User.countDocuments();
-    if (count === 0) {
-      console.log('📦 No users found — seeding default admin...');
+    if (count === demoUsers.length) {
       const Site = require('./models/Site');
       const Product = require('./models/Product');
       const Vehicle = require('./models/Vehicle');
-
-      const masterAdmin = await User.create({
-        name: 'Master Admin',
-        email: 'masteradmin@erp.com',
-        password: 'Admin@123',
-        role: 'masterAdmin',
-        phone: '9999999999',
-      });
-      await User.create({ name: 'Admin User', email: 'admin@erp.com', password: 'Admin@123', role: 'admin', phone: '8888888888' });
-      const manager = await User.create({ name: 'Site Manager', email: 'manager@erp.com', password: 'Admin@123', role: 'manager', phone: '7777777777' });
+      const manager = await User.findOne({ email: 'manager@erp.com' });
 
       const site1 = await Site.create({ name: 'Vizag Steel Plant', clientCompany: 'Rashtriya Ispat Nigam Ltd.', location: 'Visakhapatnam, AP', manager: manager._id, status: 'active', startDate: new Date('2024-01-01'), contractValue: 5000000 });
       const site2 = await Site.create({ name: 'Gannavaram Port', clientCompany: 'Gannavaram Port Authority', location: 'Gannavaram, AP', manager: manager._id, status: 'active', startDate: new Date('2024-03-01'), contractValue: 3000000 });
-
       manager.assignedSites = [site1._id, site2._id];
       await manager.save();
 
@@ -51,18 +60,13 @@ connectDB().then(async () => {
       await Vehicle.insertMany([
         { vehicleNumber: 'AP05TC1234', vehicleType: 'Tipper', ownership: 'own', driverName: 'Raju Kumar', driverPhone: '9876543210', capacity: 15, tripRate: 2500, tonRate: 180, assignedSites: [site1._id], status: 'active' },
         { vehicleNumber: 'AP05TC5678', vehicleType: 'Truck', ownership: 'own', driverName: 'Suresh Rao', driverPhone: '9876543211', capacity: 20, tripRate: 3000, tonRate: 160, assignedSites: [site1._id, site2._id], status: 'active' },
-        { vehicleNumber: 'AP05JC0001', vehicleType: 'JCB', ownership: 'own', driverName: 'Manoj', driverPhone: '9876543213', hourlyRate: 1200, dailyRate: 9000, assignedSites: [site1._id], status: 'active' },
+        { vehicleNumber: 'AP05JC0001', vehicleType: 'JCB', ownership: 'own', driverName: 'Manoj', driverPhone: '9876543213', capacity: 15, tripRate: 0, hourlyRate: 1200, dailyRate: 9000, assignedSites: [site1._id], status: 'active' },
       ]);
-
-      console.log('✅ Default users + seed data created');
-      console.log('   masteradmin@erp.com / Admin@123');
-      console.log('   admin@erp.com       / Admin@123');
-      console.log('   manager@erp.com     / Admin@123');
+      console.log('✅ Default operational seed data created');
     }
   } catch (e) {
     console.warn('⚠️  Auto-seed error:', e.message);
-  }
-});
+  }});
 
 const app = express();
 
